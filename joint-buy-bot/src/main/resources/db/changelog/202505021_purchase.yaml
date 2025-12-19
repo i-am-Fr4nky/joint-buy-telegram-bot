@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      author: ange
+      id: 202505021_purchase
+      changes:
+        - createTable:
+            tableName: purchase
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: chat_id
+                  type: bigint
+              - column:
+                  name: msg_id
+                  type: INTEGER
+              - column:
+                  name: purchaser_id
+                  type: uuid
+              - column:
+                  name: name
+                  type: varchar(255)
+              - column:
+                  name: amount
+                  type: float
+              - column:
+                  name: deleted
+                  type: boolean
+                  defaultValueBoolean: false
+
+              #TODO add purchaserID  as REFERENCES Members (ID),
+
+
+#              - column:
+#                  name: telegram_inline_msg_id
+#                  type: varchar(255)
+
+
+#TODO add columns
+#ID              INT NOT NULL AUTO_INCREMENT,
+#telChatID       DECIMAL(15),
+#telInlineMsgID  VARCHAR(50),
+#purchaserID     INT REFERENCES Members (ID),
+#name            VARCHAR(255) NOT NULL,
+#amount          FLOAT NOT NULL,
+#purchaseDate    DATETIME NOT NULL,
+#active          BOOLEAN,

@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      author: ange
+      id: 202505030_purchase_members
+      changes:
+        - createTable:
+            tableName: purchase_member
+            columns:
+              - column:
+                  name: purchase_id
+                  type: uuid
+              - column:
+                  name: member_id
+                  type: uuid
+        - addUniqueConstraint:
+            tableName: purchase_member
+            columnNames: purchase_id, member_id

@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      relativeToChangelogFile: true
+      file: 202505021_purchase.yaml
+  - include:
+      relativeToChangelogFile: true
+      file: 202505027_member.yaml
+  - include:
+      relativeToChangelogFile: true
+      file: 202505030_purchase_members.yaml

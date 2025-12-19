@@ -1,0 +1,25 @@
+spring:
+  profiles:
+    active: prod
+  application:
+    name: telegram-dnd-bot  # TODO ranme
+  datasource:
+    # H2
+#    url: jdbc:h2:file:./db/bot
+
+#    # Compose
+    url: jdbc:postgresql://localhost:5433/compose-postgres
+    username: compose-postgres
+    password: compose-postgres
+#    url: jdbc:postgresql://jbb_pg:5432/jbb_db
+#    password: docker
+#    username: postgres
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+bot:
+  path: ""
+  username: JointBuy
+  token: 795411227:AAEM4KjNFi9AayQzPr4eTAAQ3VcQA9QRpjw # TODO use from env
