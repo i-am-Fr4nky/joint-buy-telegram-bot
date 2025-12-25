@@ -18,6 +18,7 @@ public class TransactionService { // TDO rename ?
 
     private final PurchaseRepository purchaseRepository;
 
+    // TODO вынести на другой уровень
     public Purchase save(Transaction transaction, Member creator, List<Member> members) {
         var purchase = Purchase.builder() // TODO use different ways for purchase and remittence
                 .id(transaction.getCallbackId())

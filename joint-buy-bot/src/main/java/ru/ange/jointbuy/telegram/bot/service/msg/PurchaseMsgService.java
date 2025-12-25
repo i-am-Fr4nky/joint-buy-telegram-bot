@@ -6,64 +6,71 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.ange.jointbuy.telegram.bot.converter.InlineButtonActionHolderConverter;
-import ru.ange.jointbuy.telegram.bot.model.InlineButtonAction;
-import ru.ange.jointbuy.telegram.bot.model.InlineButtonActionHolder;
-import ru.ange.jointbuy.telegram.bot.model.PurchaseInlineAware;
-import ru.ange.jointbuy.telegram.bot.model.PurchaseInlineDraft;
+import ru.ange.jointbuy.telegram.bot.model.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class PurchaseMsgService {
 
-    private static final List<InlineButtonAction> AVAILABLE_ACTIONS = List.of(
-            InlineButtonAction.JOIN, // TODO add funct
-//            InlineButtonAction.EDIT, // TODO add funct
-            InlineButtonAction.DELETE);
+    private static final List<List<InlineButtonAction>> BUTTONS = List.of(
+            List.of(InlineButtonAction.JOIN, InlineButtonAction.DISJOIN),
+//            List.of(InlineButtonAction.EDIT), // TODO add funct
+            List.of(InlineButtonAction.DELETE)
+    );
 
     private final MessageSource messageSource;
     private final InlineButtonActionHolderConverter inlineButtonActionHolderConverter;
 
-    public String getText(PurchaseInlineDraft purchase) {
+    public String getText(PurchaseImpl purchase) {
+        // TODO добавить, если будет выводиться флажок "(все)" в сообщении
+        //  c обращением в сервис, который возвращает количество пользователей в чате
+        //var memersLine = "1 " + messageSource.getMessage("inline.answer.purchase.text.all.members",
+        //        new Object[]{},
+        //        Locale.getDefault());
+
         return EmojiParser.parseToUnicode(messageSource.getMessage(
                 "inline.answer.purchase.text", new Object[]{
-                        purchase.name(),
-                        purchase.cost(),
-                        purchase.userName(),
-                        purchase.firstName(),
-                        purchase.lastName()
+                        purchase.getName(),
+                        purchase.getCost(),
+                        purchase.getCreator().getUserName(),
+                        purchase.getCreator().getFirstName(),
+                        purchase.getCreator().getLastName(),
+                        purchase.getMembers().size()
                 }, Locale.getDefault()));
     }
 
-    public String getDeletedText(PurchaseInlineDraft purchase) {
+    public String getDeletedText(Purchase purchase) {
         return EmojiParser.parseToUnicode(messageSource.getMessage(
                 "inline.answer.purchase.text.deleted", new Object[]{
-                        purchase.name(),
-                        purchase.cost(),
-                        purchase.userName(),
-                        purchase.firstName(),
-                        purchase.lastName()
+                        purchase.getName(),
+                        purchase.getCost(),
+                        purchase.getUserName(),
+                        purchase.getFirstName(),
+                        purchase.getLastName(),
+                        "" // TODO
                 }, Locale.getDefault()));
     }
 
-    public List<List<InlineKeyboardButton>> getKeys(UUID callbackId) {
-        return AVAILABLE_ACTIONS.stream()
-                .map(a ->
-                        InlineButtonActionHolder.builder()
-                                .callbackId(callbackId)
-                                .action(a)
-                                .build())
-                .map(a ->
-                        InlineKeyboardButton.builder()
-                                .text(messageSource.getMessage(a.action().getMsgCode(), new Object[]{}, Locale.getDefault()))
-                                .callbackData(inlineButtonActionHolderConverter.convert(a))
-                                .build())
-                .map(List::of)
+    public List<List<InlineKeyboardButton>> getButtons(UUID callbackId) {
+        return BUTTONS.stream()
+                .map(row ->
+                        row.stream()
+                                .map(a -> InlineButtonActionHolder.builder()
+                                        .callbackId(callbackId)
+                                        .action(a)
+                                        .build())
+                                .map(a -> InlineKeyboardButton.builder()
+                                        .text(messageSource.getMessage(
+                                                a.action().getMsgCode(),
+                                                new Object[]{},
+                                                Locale.getDefault()))
+                                        .callbackData(inlineButtonActionHolderConverter.convert(a))
+                                        .build())
+                                .toList())
                 .toList();
+
     }
 
     public List<List<InlineKeyboardButton>> getDeletedKeys(UUID callbackId) {
@@ -81,14 +88,14 @@ public class PurchaseMsgService {
         return Collections.singletonList(List.of(btt));
     }
 
-    public PurchaseInlineAware getPurchaseInlineAware(PurchaseInlineDraft purchaseInlineDraft) {
+    public PurchaseInlineAware getPurchaseInlineAware(PurchaseImpl purchaseInlineDraft) {
         return new PurchaseInlineAware(
                 messageSource.getMessage("inline.query.purchase.thumbnailUrl", new Object[]{}, Locale.getDefault()),
                 messageSource.getMessage("inline.query.purchase.title", new Object[]{}, Locale.getDefault()),
                 messageSource.getMessage("inline.query.purchase.desc",
                         new Object[]{
-                                purchaseInlineDraft.cost(),
-                                purchaseInlineDraft.name()
+                                purchaseInlineDraft.getCost(),
+                                purchaseInlineDraft.getName()
                         }, Locale.getDefault()));
     }
 }

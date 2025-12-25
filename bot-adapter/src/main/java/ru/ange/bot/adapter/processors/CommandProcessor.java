@@ -13,7 +13,7 @@ public abstract class CommandProcessor implements UpdateProcessor {
     }
 
     @Override
-    public boolean processed(Update update) {
+    public boolean canProcessed(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasEntities()) {
             return false;
         }

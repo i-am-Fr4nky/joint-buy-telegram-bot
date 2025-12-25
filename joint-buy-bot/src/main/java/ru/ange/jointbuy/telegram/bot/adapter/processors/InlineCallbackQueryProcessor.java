@@ -2,20 +2,18 @@ package ru.ange.jointbuy.telegram.bot.adapter.processors;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.ange.bot.adapter.processors.UpdateProcessor;
 import ru.ange.bot.adapter.util.ParseModes;
 import ru.ange.jointbuy.telegram.bot.converter.InlineButtonActionHolderConverter;
 import ru.ange.jointbuy.telegram.bot.converter.PurchaseDraftConverter;
 import ru.ange.jointbuy.telegram.bot.entity.Purchase;
-import ru.ange.jointbuy.telegram.bot.model.InlineButtonAction;
 import ru.ange.jointbuy.telegram.bot.model.InlineButtonActionHolder;
 import ru.ange.jointbuy.telegram.bot.service.MemberService;
 import ru.ange.jointbuy.telegram.bot.service.TransactionService;
@@ -34,7 +32,7 @@ public class InlineCallbackQueryProcessor implements UpdateProcessor {
     private final MemberService memberService;
 
     @Override
-    public boolean processed(Update update) {
+    public boolean canProcessed(Update update) {
         return update.hasCallbackQuery();
     }
 
@@ -46,13 +44,13 @@ public class InlineCallbackQueryProcessor implements UpdateProcessor {
         var callBackHolder = inlineButtonActionHolderConverter.convertBack(callbackQuery.getData());
 
         switch (callBackHolder.action()) {
-            case DELETE -> {
+            case DELETE -> { // TODO проверить как работает в личных сообщениях
                 var purchase = transactionService.setDeletedByCallbackId(callBackHolder.callbackId(), true);
-                return createDeletedMsg(purchase, callBackHolder);
+                return createDeletedMsg(purchase, callBackHolder, callbackQuery);
             }
             case RESTORE -> {
                 var purchase = transactionService.setDeletedByCallbackId(callBackHolder.callbackId(), false);
-                return createRestoredMsg(purchase, callBackHolder);
+                return createRestoredMsg(purchase, callBackHolder, callbackQuery);
             }
             case JOIN -> {
                 var purchase = transactionService.getPurchase(callBackHolder.callbackId());
@@ -78,15 +76,18 @@ public class InlineCallbackQueryProcessor implements UpdateProcessor {
                         .build();
 
                 return Optional.of(acq);
-            }
-            default -> {
+            } default -> {
                 throw new RuntimeException("Unknow action"); // TODO use custom Exception
             }
         }
     }
 
 
-    private Optional<BotApiMethod<?>> createDeletedMsg(Purchase purchase, InlineButtonActionHolder callBackHolder) {
+    private Optional<BotApiMethod<?>> createDeletedMsg(
+            Purchase purchase,
+            InlineButtonActionHolder callBackHolder,
+            CallbackQuery callbackQuery) {
+
         var text = purchaseMsgService.getDeletedText(
                 Objects.requireNonNull(purchaseDraftConverter.convert(purchase)));
 
@@ -96,8 +97,7 @@ public class InlineCallbackQueryProcessor implements UpdateProcessor {
 
         var emt = EditMessageText.builder()
                 .parseMode(ParseModes.HTML)
-                .chatId(purchase.getChatId())
-                .messageId(purchase.getMsgId())
+                .inlineMessageId(callbackQuery.getInlineMessageId())
                 .text(text)
                 .replyMarkup(markupInline)
                 .build();
@@ -105,18 +105,23 @@ public class InlineCallbackQueryProcessor implements UpdateProcessor {
         return Optional.of(emt);
     }
 
-    private Optional<BotApiMethod<?>> createRestoredMsg(Purchase purchase, InlineButtonActionHolder callBackHolder) {
-        var text = purchaseMsgService.getText(
-                Objects.requireNonNull(purchaseDraftConverter.convert(purchase)));
+    private Optional<BotApiMethod<?>> createRestoredMsg(
+            Purchase purchase,
+            InlineButtonActionHolder callBackHolder,
+            CallbackQuery callbackQuery) {
+
+//        var text = purchaseMsgService.getText(
+//                Objects.requireNonNull(purchaseDraftConverter.convert(purchase)));
+
+        var text = "some text";
 
         var markupInline = InlineKeyboardMarkup.builder()
-                .keyboard(purchaseMsgService.getKeys(callBackHolder.callbackId()))
+                .keyboard(purchaseMsgService.getButtons(callBackHolder.callbackId()))
                 .build();
 
         var emt = EditMessageText.builder()
                 .parseMode(ParseModes.HTML)
-                .chatId(purchase.getChatId())
-                .messageId(purchase.getMsgId())
+                .inlineMessageId(callbackQuery.getInlineMessageId())
                 .text(text)
                 .replyMarkup(markupInline)
                 .build();

@@ -37,4 +37,5 @@ public class Purchase {
             inverseJoinColumns = @JoinColumn(name = "member_id"))
     private List<Member> members;
 
+
 }

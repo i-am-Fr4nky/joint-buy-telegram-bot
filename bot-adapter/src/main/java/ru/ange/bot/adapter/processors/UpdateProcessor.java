@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface UpdateProcessor {
 
-    boolean processed(Update update); // TODO use predicate ?
+    boolean canProcessed(Update update); // TODO use predicate ?
 
     Optional<BotApiMethod<?>> process(Update update);
 

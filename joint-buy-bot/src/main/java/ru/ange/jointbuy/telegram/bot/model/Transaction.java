@@ -12,12 +12,8 @@ import java.util.UUID;
 public class Transaction {
 
     private Long chatId;
-
     private Integer msgId;
-
     private String name;
-
     private Float amount;
-
     private UUID callbackId;
 }

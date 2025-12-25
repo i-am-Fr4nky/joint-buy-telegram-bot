@@ -12,8 +12,12 @@ public abstract class BotSelfMsgProcessor implements UpdateProcessor {
         this.botProperties = botProperties;
     }
 
+
+    /**
+     * Срабатывает, если сообщение пришло от самого бота
+     */
     @Override
-    public boolean processed(Update update) {
+    public boolean canProcessed(Update update) {
         if (!update.hasMessage())
             return false;
 

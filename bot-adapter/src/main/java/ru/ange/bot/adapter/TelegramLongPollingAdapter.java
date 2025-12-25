@@ -28,7 +28,7 @@ public class TelegramLongPollingAdapter extends TelegramLongPollingBot {
         log.debug("Work with update {}", updId);
         for (var processor : updateProcessors) {
             var clazz = processor.getClass();
-            if (processor.processed(update)) {
+            if (processor.canProcessed(update)) {
                 try {
                     log.debug("Use processor '{}' for work with update {}", clazz, updId);
                     var answer = processor.process(update);

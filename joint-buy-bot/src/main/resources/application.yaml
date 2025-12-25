@@ -23,3 +23,11 @@ bot:
   path: ""
   username: JointBuy
   token: 795411227:AAEM4KjNFi9AayQzPr4eTAAQ3VcQA9QRpjw # TODO use from env
+
+
+logging:
+  level:
+    ru:
+      ange:
+        bot:
+          adapter: DEBUG

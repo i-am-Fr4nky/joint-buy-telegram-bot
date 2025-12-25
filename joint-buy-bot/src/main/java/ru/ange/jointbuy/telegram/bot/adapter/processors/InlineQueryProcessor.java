@@ -12,7 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import ru.ange.bot.adapter.processors.UpdateProcessor;
 import ru.ange.bot.adapter.util.ParseModes;
 import ru.ange.jointbuy.telegram.bot.converter.PurchaseInlineDraftConverter;
-import ru.ange.jointbuy.telegram.bot.model.PurchaseInlineDraft;
+import ru.ange.jointbuy.telegram.bot.model.PurchaseImpl;
 import ru.ange.jointbuy.telegram.bot.service.msg.PurchaseMsgService;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class InlineQueryProcessor implements UpdateProcessor {
     private final PurchaseMsgService purchaseMsgService;
 
     @Override
-    public boolean processed(Update update) {
+    public boolean canProcessed(Update update) {
         return update.hasInlineQuery();
     }
 
@@ -37,6 +37,7 @@ public class InlineQueryProcessor implements UpdateProcessor {
 
         var inlineQuery = update.getInlineQuery();
         var answersButtons = new ArrayList<InlineQueryResult>();
+
         var callbackId = UUID.randomUUID();
 
         var purchaseInlineDraft = Objects.requireNonNull(purchaseInlineDraftConverter.convert(inlineQuery));
@@ -54,20 +55,19 @@ public class InlineQueryProcessor implements UpdateProcessor {
         }
     }
 
-    private InlineQueryResultArticle getPurchaseInputTextMessageContent(
-            PurchaseInlineDraft purchaseInlineDraft,
-            UUID callbackId) {
+
+    private InlineQueryResultArticle getPurchaseInputTextMessageContent(PurchaseImpl purchase, UUID callbackId) {
 
         var remitMsgCont = InputTextMessageContent.builder()
                 .parseMode(ParseModes.HTML)
-                .messageText(purchaseMsgService.getText(purchaseInlineDraft))
+                .messageText(purchaseMsgService.getText(purchase))
                 .build();
 
         var markupInline = InlineKeyboardMarkup.builder()
-                .keyboard(purchaseMsgService.getKeys(callbackId))
+                .keyboard(purchaseMsgService.getButtons(callbackId))
                 .build();
 
-        var purchaseAware = purchaseMsgService.getPurchaseInlineAware(purchaseInlineDraft);
+        var purchaseAware = purchaseMsgService.getPurchaseInlineAware(purchase);
 
         // TODO use converters ?
         return InlineQueryResultArticle.builder()
